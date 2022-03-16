@@ -20,7 +20,7 @@ clean:
 
 $(iso): $(kernel)
 	@mkdir -p build/isofiles/boot/grub
-	@cp $(kernel) build/isofiles/boot/kernel.cfg
+	@cp $(kernel) build/isofiles/boot/kernel.bin
 	@cp $(grub_cfg) build/isofiles/boot/grub
 	@grub2-mkrescue -o $(iso) build/isofiles 2> /dev/null
 
