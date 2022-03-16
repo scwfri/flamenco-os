@@ -1,4 +1,5 @@
 global start
+extern long_mode_start
 
 section .text
 bits 32
@@ -17,13 +18,16 @@ start:
 	; load 64-bit Global Descriptor Table
 	lgdt [gdt64.pointer]
 
+	jmp gdt64.code:long_mode_start
+
 	mov dword [0xb8000], 0x2f4b2f4f
 	hlt
 
 ; read-only data
 section .rodata
 gdt64:
-	dq 0  ; dq => define quad
+	dq 0  ; dq => define quad (0 entry)
+.code: equ $ - gdt64  ; offset of gdt from current address.. used when we load GDT offset into cs register
 	dq (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53)  ; set some bits
 .pointer: ; sub-label of gdt64... acess through gdt64.pointer
 	dw $ - gdt64 - 1  ; $ replaced with current address (.pointer)
@@ -116,8 +120,7 @@ init_page_tables:
 
 	; map P2 to 2MiB page table
 	mov ecx, 0  ; counter
-	jmp .map_p2_table
-
+	;jmp .map_p2_table
 .map_p2_table:
 	; map ecx-th P2 entry to huge page table @ 2MiB * ecx (counter)
 	mov eax, 0x200000  ; 2MiB
