@@ -14,8 +14,20 @@ start:
 	call init_page_tables
 	call enable_paging
 
+	; load 64-bit Global Descriptor Table
+	lgdt [gdt64.pointer]
+
 	mov dword [0xb8000], 0x2f4b2f4f
 	hlt
+
+; read-only data
+section .rodata
+gdt64:
+	dq 0  ; dq => define quad
+	dq (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53)  ; set some bits
+.pointer: ; sub-label of gdt64... acess through gdt64.pointer
+	dw $ - gdt64 - 1  ; $ replaced with current address (.pointer)
+	dq gdt64
 
 ; print 'ERR: ' and error code in al
 error:
