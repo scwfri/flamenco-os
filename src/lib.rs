@@ -1,23 +1,30 @@
+#![feature(lang_items)]
 #![no_std]
 #![no_main]
 
+extern crate rlibc;
+
 use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"Hello World!";
-
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
-    let vga_buffer = 0xb8000 as *mut u8;
+pub extern "C" fn rust_main() {
+    let hello = b"Hello World!";
+    let color_byte = 0x1f;
 
-    for (i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
+    let mut hello_colored = [color_byte; 24];
+    for (i, char_byte) in hello.into_iter().enumerate() {
+        hello_colored[i * 2] = *char_byte;
     }
+
+    let buffer_ptr = (0xb8000 + 1988) as *mut _;
+    unsafe { *buffer_ptr = hello_colored };
 
     loop {}
 }
+
+#[lang = "eh_personality"]
+#[no_mangle]
+pub extern "C" fn eh_personality() {}
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {

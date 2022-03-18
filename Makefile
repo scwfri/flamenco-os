@@ -26,8 +26,8 @@ $(iso): $(kernel)
 	@cp $(grub_cfg) build/isofiles/boot/grub
 	@grub2-mkrescue -o $(iso) build/isofiles 2> /dev/null
 
-$(kernel): $(rust_os) $(assembly_object_files) $(linker_script)
-	@ld -n -o $(kernel) -T $(linker_script) -o $(kernel) \
+$(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
+	@ld -n --gc-sections -o $(kernel) -T $(linker_script) -o $(kernel) \
 		$(assembly_object_files) $(rust_os)
 
 kernel:
